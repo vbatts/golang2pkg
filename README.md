@@ -6,7 +6,7 @@ a distribution package.
 
 Use Cases
 ---------
-![UseCases](../blob/master/UseCases.png?raw=true)
+![UseCases](https://raw.github.com/vbatts/golang2pkg/master/UseCases.png)
 
 * to end up with an binary, regardless of dependencies
 * to package an source library that is fetched
