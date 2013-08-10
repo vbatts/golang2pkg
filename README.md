@@ -89,3 +89,11 @@ This is a little muddied by demos or example apps, that may be alright to
 compile, but not to land in /usr/bin. This own-ness would be left up to the
 packager to review %files (or similar).
 
+
+spectemplate-golang
+-------------------
+
+First effort at hand jamming an RPM for a golang source library, for the
+'launchpad.net/goyaml' project:
+http://www.hashbangbash.com/~vbatts/golang/golang-goyaml-bzr47-1.fc19.src.rpm
+
