@@ -66,4 +66,16 @@ The .git/.hg/.bzr will be used to collect the revision hash for a package
 versioning, but that meta data directory will not be included in the end system
 package.
 
+bzr:
+
+	$> bzr revno
+
+git:
+
+	$> git rev-parse --short HEAD
+
+
+hg (this is ugly):
+
+	$> hg tip |grep ^changeset: | awk '{ print $2 }' | tr ':' '-'
 
