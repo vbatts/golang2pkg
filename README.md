@@ -79,3 +79,13 @@ hg (this is ugly):
 
 	$> hg tip |grep ^changeset: | awk '{ print $2 }' | tr ':' '-'
 
+
+Executables
+-----------
+
+Often, executables are at the root of a repo, but that is not always the case.
+There might ought to be a search for ELF executables to put them into bindir.
+This is a little muddied by demos or example apps, that may be alright to
+compile, but not to land in /usr/bin. This own-ness would be left up to the
+packager to review %files (or similar).
+
