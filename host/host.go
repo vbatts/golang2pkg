@@ -30,7 +30,7 @@ func HasRpmBuild() bool {
 	return len(Command("rpmbuild")) > 0
 }
 
-// Path to rpmbuild (if presence)
+// Path to rpmbuild (if present)
 func RpmBuild() string {
 	return Command("rpmbuild")
 }
@@ -40,7 +40,7 @@ func HasRpm() bool {
 	return len(Command("rpm")) > 0
 }
 
-// Path to rpm (if presence)
+// Path to rpm (if present)
 func Rpm() string {
 	return Command("rpm")
 }
@@ -50,7 +50,7 @@ func HasDpkg() bool {
 	return len(Command("dpkg")) > 0
 }
 
-// Path to dpkg (if presence)
+// Path to dpkg (if present)
 func Dpkg() string {
 	return Command("dpkg")
 }
@@ -60,7 +60,22 @@ func HasDhMake() bool {
 	return len(Command("dh_make")) > 0
 }
 
-// Path to dh_make (if presence)
+// Path to dh_make (if present)
 func DhMake() string {
 	return Command("dh_make")
+}
+
+// Path to hg (if present)
+func Hg() string {
+	return Command("hg")
+}
+
+// Path to bzr (if present)
+func Bzr() string {
+	return Command("bzr")
+}
+
+// Path to git (if present)
+func Git() string {
+	return Command("git")
 }
