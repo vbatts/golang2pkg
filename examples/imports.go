@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go/build"
 	"go/parser"
@@ -12,7 +13,9 @@ import (
 )
 
 func main() {
-	if len(os.Args[1:]) == 0 {
+	flag.Parse()
+
+	if len(flag.Args()) == 0 {
 		fmt.Fprintf(os.Stderr, "ERROR: provide package\n")
 		os.Exit(1)
 	}
@@ -20,7 +23,7 @@ func main() {
 	err := os.Mkdir(t_path, 0755)
 	if err != nil && os.IsExist(err) {
 		fmt.Fprintf(os.Stderr, "Re-using directory '%s'\n", t_path)
-  } else if err != nil {
+	} else if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
@@ -32,16 +35,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd := exec.Command("go", "get", "-d", os.Args[1])
-	fmt.Printf("%#v\n", cmd)
-	buf, err := cmd.Output()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-		os.Exit(1)
+	for _, arg := range flag.Args() {
+		cmd := exec.Command("go", "get", "-d", arg)
+		fmt.Printf("%#v\n", cmd)
+		buf, err := cmd.Output()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		if len(buf) > 0 {
+			fmt.Printf("%s\n", buf)
+		}
 	}
-  if len(buf) > 0 {
-	  fmt.Printf("%s\n", buf)
-  }
 
 }
 
