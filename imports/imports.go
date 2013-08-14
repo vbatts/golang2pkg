@@ -62,11 +62,33 @@ type Imports []*build.Package
 func (i Imports) Len() int      { return len(i) }
 func (i Imports) Swap(k, j int) { i[k], i[j] = i[j], i[k] }
 
+func (i Imports) String() string {
+  names := []string{}
+  for _, pkg := range i {
+    names = append(names, pkg.ImportPath)
+  }
+  return "[" + strings.Join(names,",") + "]"
+}
+
 // for sorting the packages by their name
 type byImportPath struct{ Imports }
 
 func (bip byImportPath) Less(i, j int) bool {
 	return bip.Imports[i].ImportPath < bip.Imports[j].ImportPath
+}
+
+/*
+Get the imports from the default GOROOT and GOPATH
+*/
+func FindImportsDefault() (pkgs Imports, err error) {
+  for _, dir := range build.Default.SrcDirs() {
+    p, err := FindImports(dir)
+    if err != nil {
+      return pkgs, err
+    }
+    pkgs = append(pkgs, p...)
+  }
+  return pkgs, nil
 }
 
 /*
@@ -79,7 +101,7 @@ func FindImports(basepath string) (Imports, error) {
 			return err
 		}
 		if info.Mode().IsRegular() && isSourceFile(path) {
-			lib := strings.TrimPrefix(filepath.Dir(path), basepath+"/src/")
+			lib := strings.TrimPrefix(filepath.Dir(path), basepath)
 			// if the lib string is _not_ in our set and import path is sane
 			if _, found := set[lib]; !found && isImportablePath(lib) {
 				set[lib] = true
@@ -95,7 +117,7 @@ func FindImports(basepath string) (Imports, error) {
 	}
 
 	for lib, _ := range set {
-		if pkg, err := build.ImportDir(filepath.Join(basepath, "src", lib), 0); err == nil {
+		if pkg, err := build.ImportDir(filepath.Join(basepath, lib), 0); err == nil {
 			pkgs = append(pkgs, pkg)
 		}
 	}
