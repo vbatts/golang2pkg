@@ -2,10 +2,81 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
+	"path"
+
+	"github.com/vbatts/golang2pkg/imports"
 )
 
 func main() {
+	var (
+		output string
+		root   string
+		debug  bool
+		//importname string
+	)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		cwd = os.TempDir()
+	}
+
+	root = fmt.Sprintf("%s/golang2pkg-%d", os.TempDir(), os.Getpid())
+
+	//flag.StringVar(&importname, "importname", "", "overide the qualified import path (for a relative path packaging)")
+	flag.StringVar(&root, "root", root, "root directory to treat as GOPATH for imports collected")
+	flag.StringVar(&output, "output", cwd, "output directory for artifacts")
+	flag.BoolVar(&debug, "debug", false, "debugging output")
 	flag.Parse()
+
+	if err = os.MkdirAll(path.Join(root, "src"), 0755); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
+	// if we can get the collection of current pkgs,
+	// then symlink those present to our root, unless they're already there
+	if pkgs, err := imports.FindImportsDefault(); err == nil {
+		for _, pkg := range pkgs {
+			for _, arg := range flag.Args() {
+				if pkg.ImportPath == arg {
+					if _, err = os.Stat(path.Join(root, "src", arg)); os.IsNotExist(err) {
+            dest := path.Join(root,"src",arg)
+            if debug {
+              fmt.Printf("making dir '%s'\n", path.Dir(dest))
+            }
+						if err = os.MkdirAll(path.Dir(dest), 0755); err != nil {
+							fmt.Fprintf(os.Stderr, "WARN: %s\n", err)
+							continue
+						}
+						err = os.Symlink(path.Join(pkg.SrcRoot, pkg.ImportPath), dest)
+						if err != nil {
+							fmt.Fprintf(os.Stderr, "WARN: %s\n", err)
+						}
+					}
+				}
+			}
+		}
+	}
+	fmt.Println(root)
+
+	for _, arg := range flag.Args() {
+		err = imports.GetPkgSource(arg, root)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+	}
+
+	pkgs, err := imports.FindImports(root)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
+	}
+	for _, pkg := range pkgs {
+		fmt.Println(path.Join(pkg.SrcRoot, pkg.ImportPath))
+	}
 
 	/*
 	  $> golang2pkg labix.org/v2/mgo
