@@ -4,6 +4,7 @@ how to treat any given "import" that is attempting to be packaged
 package imports
 
 import (
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,7 +15,7 @@ import (
 Call out to `go get`. root will be set as GOPATH
 */
 func GetPkgSource(pkg string, root string) error {
-	err = os.Setenv("GOPATH", root)
+	err := os.Setenv("GOPATH", root)
 	if err != nil {
 		return err
 	}
