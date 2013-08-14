@@ -4,7 +4,9 @@ how to treat any given "import" that is attempting to be packaged
 package imports
 
 import (
+	"go/build"
 	"io"
+  "sort"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,46 +38,62 @@ func GetPkgSource(pkg string, root string) error {
 	return cmd.Run()
 }
 
-// XXX this is largely already available in go/build ...
-type Import struct {
-	Base string // relative base path of this src
-	Name string // the import name
+// Convenience to see whether the import path is one that we'd be interested in
+func isImportablePath(path string) bool {
+	if strings.Contains(path, "/_") || strings.HasPrefix(path, "_") || strings.HasPrefix(path, ".") {
+		return false
+	}
+	return true
 }
 
-func (i Import) String() string {
-	return i.Name
+// Convenience to see whether the file path is a possible go source type source file
+func isSourceFile(path string) bool {
+	if filepath.Ext(path) == ".go" ||
+		filepath.Ext(path) == ".s" ||
+		filepath.Ext(path) == ".c" ||
+		filepath.Ext(path) == ".h" {
+		return true
+	}
+	return false
 }
+
+type Imports []*build.Package
+func (i Imports) Len() int { return len(i) }
+func (i Imports) Swap(k,j int) { i[k], i[j] = i[j], i[k] }
+
+type byImportPath struct { Imports }
+func (bip byImportPath) Less(i, j int) bool { return bip.Imports[i].ImportPath < bip.Imports[j].ImportPath }
 
 /*
 Scan basepath and find the import'able paths relative to it
-
-XXX this is largely already available in go/build ...
 */
-func FindImports(basepath string) ([]Import, error) {
+func FindImports(basepath string) (Imports, error) {
 	set := map[string]bool{} // unique keys
 	findImportFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if info.Mode().IsRegular() && filepath.Ext(path) == ".go" {
-			lib := strings.TrimPrefix(filepath.Dir(path), basepath+"/")
-			if _, found := set[lib]; !found {
+		if info.Mode().IsRegular() && isSourceFile(path) {
+			lib := strings.TrimPrefix(filepath.Dir(path), basepath+"/src/")
+			// if the lib string is _not_ in our set and import path is sane
+			if _, found := set[lib]; !found && isImportablePath(lib) {
 				set[lib] = true
 			}
 		}
 		return nil
 	}
 
+	pkgs := Imports{}
 	err := filepath.Walk(basepath, findImportFn)
-
-	found_imports := []Import{}
-	for lib, _ := range set {
-		found_imports = append(found_imports, Import{
-			Base: basepath,
-			Name: lib})
-	}
 	if err != nil {
-		return found_imports, err
+		return pkgs, err
 	}
-	return found_imports, nil
+
+	for lib, _ := range set {
+		if pkg, err := build.ImportDir(filepath.Join(basepath, "src", lib), 0); err == nil {
+			pkgs = append(pkgs, pkg)
+		}
+	}
+  sort.Sort(byImportPath{pkgs})
+	return pkgs, nil
 }
