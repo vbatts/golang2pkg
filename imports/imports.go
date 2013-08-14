@@ -6,10 +6,10 @@ package imports
 import (
 	"go/build"
 	"io"
-  "sort"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -58,11 +58,16 @@ func isSourceFile(path string) bool {
 }
 
 type Imports []*build.Package
-func (i Imports) Len() int { return len(i) }
-func (i Imports) Swap(k,j int) { i[k], i[j] = i[j], i[k] }
 
-type byImportPath struct { Imports }
-func (bip byImportPath) Less(i, j int) bool { return bip.Imports[i].ImportPath < bip.Imports[j].ImportPath }
+func (i Imports) Len() int      { return len(i) }
+func (i Imports) Swap(k, j int) { i[k], i[j] = i[j], i[k] }
+
+// for sorting the packages by their name
+type byImportPath struct{ Imports }
+
+func (bip byImportPath) Less(i, j int) bool {
+	return bip.Imports[i].ImportPath < bip.Imports[j].ImportPath
+}
 
 /*
 Scan basepath and find the import'able paths relative to it
@@ -94,6 +99,6 @@ func FindImports(basepath string) (Imports, error) {
 			pkgs = append(pkgs, pkg)
 		}
 	}
-  sort.Sort(byImportPath{pkgs})
+	sort.Sort(byImportPath{pkgs})
 	return pkgs, nil
 }
