@@ -4,6 +4,9 @@ golang2pkg
 A utility to manage the packaging of a golang binary or source library into
 a distribution package.
 
+WARNING: This is presently a work-in-progress and is not functional.
+         expect this warning to drop off and a stable tag once usable
+
 Use Cases
 ---------
 ![UseCases](https://raw.github.com/vbatts/golang2pkg/master/UseCases.png)
