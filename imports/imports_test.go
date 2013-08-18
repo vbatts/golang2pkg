@@ -24,4 +24,7 @@ func TestFind(t *testing.T) {
 			len(def_pkgs),
 			len(i))
 	}
+  if len(i) == 0 {
+		t.Errorf("FindImportsDefault returned [%d]", len(i))
+  }
 }
