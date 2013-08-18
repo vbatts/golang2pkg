@@ -13,6 +13,9 @@ func TestFind(t *testing.T) {
 			t.Fatal(e)
 		}
 		//fmt.Printf("%#v\n", i)
-		fmt.Println(i)
+		fmt.Println(src)
+		for _, pkg := range i {
+			fmt.Println(pkg.ImportPath)
+		}
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/vbatts/golang2pkg/imports"
+	"github.com/vbatts/golang2pkg/osutil"
 )
 
 func main() {
@@ -42,15 +43,12 @@ func main() {
 			for _, arg := range flag.Args() {
 				if pkg.ImportPath == arg {
 					if _, err = os.Stat(path.Join(root, "src", arg)); os.IsNotExist(err) {
-            dest := path.Join(root,"src",arg)
-            if debug {
-              fmt.Printf("making dir '%s'\n", path.Dir(dest))
-            }
+						dest := path.Join(root, "src", arg)
 						if err = os.MkdirAll(path.Dir(dest), 0755); err != nil {
 							fmt.Fprintf(os.Stderr, "WARN: %s\n", err)
 							continue
 						}
-						err = os.Symlink(path.Join(pkg.SrcRoot, pkg.ImportPath), dest)
+						err = osutil.Copy(path.Join(pkg.SrcRoot, pkg.ImportPath), path.Dir(dest))
 						if err != nil {
 							fmt.Fprintf(os.Stderr, "WARN: %s\n", err)
 						}
@@ -59,7 +57,6 @@ func main() {
 			}
 		}
 	}
-	fmt.Println(root)
 
 	for _, arg := range flag.Args() {
 		err = imports.GetPkgSource(arg, root)
@@ -69,13 +66,16 @@ func main() {
 		}
 	}
 
+	fmt.Println(root)
 	pkgs, err := imports.FindImports(root)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(1)
 	}
 	for _, pkg := range pkgs {
-		fmt.Println(path.Join(pkg.SrcRoot, pkg.ImportPath))
+		fmt.Println(pkg.ImportPath)
+		//fmt.Printf("%#v\n", pkg)
+		//fmt.Println(path.Join(pkg.SrcRoot, pkg.ImportPath))
 	}
 
 	/*
