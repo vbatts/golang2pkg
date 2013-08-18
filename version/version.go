@@ -4,9 +4,9 @@ helpers to get the version information for a checked out library
 package version
 
 import (
-	//"github.com/vbatts/golang2pkg/host"
-	//"log"
-  "go/build"
+	"go/build"
+	"os"
+	"path"
 )
 
 type Version struct {
@@ -25,6 +25,31 @@ func (v Version) String() string {
 	return "0.0"
 }
 
-func FromPackage(pkg *build.Package) (v Version) {
-  return
+var VCSDirs = []string{".git", ".bzr", ".hg"}
+
+/*
+Given a build.Package, check the Dir for a directory matching CVSDirRe,
+if nothing check parents until SrcRoot
+*/
+func FromPackage(pkg *build.Package) Version {
+	pth := pkg.Dir
+	for {
+		if hasVcsDir(pth) {
+			return Version{Path: pth}
+		}
+		pth = path.Dir(pth)
+		if pth == pkg.SrcRoot {
+			break
+		}
+	}
+	return Version{}
+}
+
+func hasVcsDir(pth string) bool {
+	for _, vcs := range VCSDirs {
+		if fi, err := os.Stat(path.Join(pth, vcs)); err == nil && fi.IsDir() {
+			return true
+		}
+	}
+	return false
 }
