@@ -4,8 +4,9 @@ helpers to get the version information for a checked out library
 package version
 
 import (
-	"github.com/vbatts/golang2pkg/host"
-	"log"
+	//"github.com/vbatts/golang2pkg/host"
+	//"log"
+  "go/build"
 )
 
 type Version struct {
@@ -22,4 +23,8 @@ func (v Version) String() string {
 	}
 
 	return "0.0"
+}
+
+func FromPackage(pkg *build.Package) (v Version) {
+  return
 }
