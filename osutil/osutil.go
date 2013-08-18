@@ -4,9 +4,16 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	//"github.com/vbatts/golang2pkg/host"
 )
 
-// Cheap hack, to get a file copy
+/*
+So copying files in bulk is not yet implemented and is left as an
+exercise for the developer.
+
+For now I'll hack. Later may implement a filepath.Walk, io.Copy madness
+(remembering to mkdirs and set mtimes)
+*/
 func Copy(src, dest string) error {
 	cmd := exec.Command("cp", "-a", src, dest)
 	stdout, err := cmd.StdoutPipe()

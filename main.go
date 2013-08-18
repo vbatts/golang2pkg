@@ -73,8 +73,8 @@ func main() {
 		os.Exit(1)
 	}
 	for _, pkg := range pkgs {
-		fmt.Println(pkg.ImportPath)
-		//fmt.Printf("%#v\n", pkg)
+		//fmt.Println(pkg.SrcRoot, pkg.ImportPath)
+		fmt.Printf("%#v\n", pkg)
 		//fmt.Println(path.Join(pkg.SrcRoot, pkg.ImportPath))
 	}
 

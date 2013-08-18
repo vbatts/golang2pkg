@@ -102,9 +102,9 @@ func FindImports(basepath string) (Imports, error) {
 		}
 		if info.Mode().IsRegular() && isSourceFile(path) {
 			lib := strings.TrimPrefix(filepath.Dir(path), basepath)
-      if strings.HasPrefix(lib, "/") {
-        lib = strings.TrimPrefix(lib, "/")
-      }
+			if strings.HasPrefix(lib, "/") {
+				lib = strings.TrimPrefix(lib, "/")
+			}
 
 			// if the lib string is _not_ in our set and import path is sane
 			if _, found := set[lib]; !found && isImportablePath(lib) {
@@ -122,12 +122,12 @@ func FindImports(basepath string) (Imports, error) {
 
 	var ctx build.Context = build.Default
 	if !strings.HasPrefix(basepath, build.Default.GOROOT) && !strings.HasPrefix(basepath, build.Default.GOPATH) {
-    // rather than messing with the build.Default
+		// rather than messing with the build.Default
 		ctx = build.Context{
-			GOROOT: build.Default.GOROOT,
-			GOPATH: basepath,
-      Compiler: build.Default.Compiler,
-      JoinPath: build.Default.JoinPath,
+			GOROOT:   build.Default.GOROOT,
+			GOPATH:   basepath,
+			Compiler: build.Default.Compiler,
+			JoinPath: build.Default.JoinPath,
 		}
 	}
 

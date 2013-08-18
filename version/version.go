@@ -14,12 +14,16 @@ type Version struct {
 	Value string // Manually setting a version string
 }
 
+/*
+Stringer formating of a Version, regardless of which VCS or an explicit Value
+*/
 func (v Version) String() string {
 	if len(v.Value) > 0 {
 		return v.Value
 	}
 
 	if len(v.Path) > 0 {
+		// XXX call osutil for the git/hg/bzr version formating
 	}
 
 	return "0.0"
