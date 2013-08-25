@@ -30,6 +30,7 @@ func TestBasics(t *testing.T) {
 	pth = "/home/vbatts/opt/go/src/cgl.tideland.biz"
 	s = HgTip(pth)
 	v.Path = pth
+	fmt.Println(v.String())
 	if s != v.String() {
 		t.Errorf("versions do not match for `hg`. Expected [%s], got [%s]", s, v.String())
 	}

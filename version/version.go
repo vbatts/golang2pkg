@@ -47,11 +47,8 @@ a path of that type, in order to get a version.
 var VCSDirs = map[string]VcsFn{
 	".git": GitHead,
 	".bzr": BzrRevno,
-	".hg":  nothing,
+	".hg":  HgTip,
 }
-
-// XXX placeholder for actual vcs functions
-func nothing(p string) string { return p }
 
 /*
 Given a build.Package, check the Dir for a directory matching CVSDirRe,
@@ -90,49 +87,74 @@ func hasVcsDir(pth string) string {
 functionally equivalent to `git rev-parse --short HEAD`
 */
 func GitHead(pth string) (hash string) {
-	buf, err := bytesFromFile(path.Join(pth, ".git", "HEAD"))
+	buf, err := stringFromFile(path.Join(pth, ".git", "HEAD"))
 	if err != nil {
 		return ""
 	}
-	ref_path := strings.TrimPrefix(strings.Trim(bytes.NewBuffer(buf).String(), "\n "), "ref: ")
-	ref_buf, err := bytesFromFile(path.Join(pth, ".git", ref_path))
+	ref_path := strings.TrimPrefix(strings.Trim(buf, "\n "), "ref: ")
+	ref_buf, err := stringFromFile(path.Join(pth, ".git", ref_path))
 	if err != nil {
 		return ""
 	}
-	return strings.Trim(bytes.NewBuffer(ref_buf).String(), "\n ")[0:7]
+	return strings.Trim(ref_buf, "\n ")[0:7]
 }
 
 /*
 functionally equivalent to `bzr revno`
 */
 func BzrRevno(pth string) (num string) {
-	// ./.bzr/branch/last-revision
-	buf, err := bytesFromFile(path.Join(pth, ".bzr", "branch", "last-revision"))
+	buf, err := stringFromFile(path.Join(pth, ".bzr", "branch", "last-revision"))
 	if err != nil {
 		return ""
 	}
-	return strings.Split(bytes.NewBuffer(buf).String(), " ")[0]
+	return strings.Split(buf, " ")[0]
 }
 
 /*
-functionally equivalent to `hg log -l1 --template "{rev}:{node|short}\n"`
+functionally equivalent to `hg log -l1 --template "{rev}.{node|short}\n"`
 */
 func HgTip(pth string) (tip string) {
+	buf, err := stringFromFile(path.Join(pth, ".hg", "branch"))
+	if err != nil {
+		return ""
+	}
+	branchheads, err := stringFromFile(path.Join(pth, ".hg", "cache", "branchheads-served"))
+	if err != nil {
+		return ""
+	}
+	var reference_hash string
+	branch_name := strings.Trim(buf, "\n")
+	changesets := [][]string{}
+	for _, line := range strings.Split(strings.Trim(branchheads, "\n "), "\n") {
+		c := strings.SplitN(line, " ", 2)
+		// this is finding the hash for the current branch
+		if c[1] == branch_name {
+			reference_hash = c[0]
+		}
+		changesets = append(changesets, []string{c[0], c[1]})
+	}
+	// iterate again to get the rev for the current hash
+	for _, cs := range changesets {
+		if cs[0] == reference_hash && cs[1] != branch_name {
+			return cs[1] + "." + cs[0][0:12]
+		}
+	}
+
 	return
 }
 
 /*
 convinience func for getting bytes
 */
-func bytesFromFile(filename string) (buf []byte, err error) {
+func stringFromFile(filename string) (buf string, err error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return buf, err
 	}
 	defer file.Close()
-	buf, err = ioutil.ReadAll(file)
+	b, err := ioutil.ReadAll(file)
 	if err != nil {
 		return buf, err
 	}
-	return buf, nil
+	return bytes.NewBuffer(b).String(), nil
 }

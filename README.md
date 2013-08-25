@@ -80,7 +80,7 @@ git:
 
 hg:
 
-	$> hg log -l1 --template "{rev}:{node|short}\n"
+	$> hg log -l1 --template "{rev}.{node|short}\n"
 
 
 Executables
