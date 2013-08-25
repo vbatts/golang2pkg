@@ -46,7 +46,7 @@ a path of that type, in order to get a version.
 */
 var VCSDirs = map[string]VcsFn{
 	".git": GitHead,
-	".bzr": nothing,
+	".bzr": BzrRevno,
 	".hg":  nothing,
 }
 
@@ -90,23 +90,49 @@ func hasVcsDir(pth string) string {
 functionally equivalent to `git rev-parse --short HEAD`
 */
 func GitHead(pth string) (hash string) {
-	file, err := os.Open(path.Join(pth, ".git", "HEAD"))
-	if err != nil {
-		return ""
-	}
-	defer file.Close()
-	buf, err := ioutil.ReadAll(file)
+	buf, err := bytesFromFile(path.Join(pth, ".git", "HEAD"))
 	if err != nil {
 		return ""
 	}
 	ref_path := strings.TrimPrefix(strings.Trim(bytes.NewBuffer(buf).String(), "\n "), "ref: ")
-	ref_file, err := os.Open(path.Join(pth, ".git", ref_path))
-	if err != nil {
-		return ""
-	}
-	ref_buf, err := ioutil.ReadAll(ref_file)
+	ref_buf, err := bytesFromFile(path.Join(pth, ".git", ref_path))
 	if err != nil {
 		return ""
 	}
 	return strings.Trim(bytes.NewBuffer(ref_buf).String(), "\n ")[0:7]
+}
+
+/*
+functionally equivalent to `bzr revno`
+*/
+func BzrRevno(pth string) (num string) {
+	// ./.bzr/branch/last-revision
+	buf, err := bytesFromFile(path.Join(pth, ".bzr", "branch", "last-revision"))
+	if err != nil {
+		return ""
+	}
+	return strings.Split(bytes.NewBuffer(buf).String(), " ")[0]
+}
+
+/*
+functionally equivalent to `hg log -l1 --template "{rev}:{node|short}\n"`
+*/
+func HgTip(pth string) (tip string) {
+	return
+}
+
+/*
+convinience func for getting bytes
+*/
+func bytesFromFile(filename string) (buf []byte, err error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return buf, err
+	}
+	defer file.Close()
+	buf, err = ioutil.ReadAll(file)
+	if err != nil {
+		return buf, err
+	}
+	return buf, nil
 }

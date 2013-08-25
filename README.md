@@ -78,9 +78,9 @@ git:
 	$> git rev-parse --short HEAD
 
 
-hg (this is ugly):
+hg:
 
-	$> hg tip |grep ^changeset: | awk '{ print $2 }' | tr ':' '-'
+	$> hg log -l1 --template "{rev}:{node|short}\n"
 
 
 Executables

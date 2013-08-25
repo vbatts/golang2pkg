@@ -20,4 +20,17 @@ func TestBasics(t *testing.T) {
 	v = FromDir(b, filepath.Dir(b))
 	fmt.Println(v)
 
+	pth := "/home/vbatts/opt/go/src/launchpad.net/goyaml"
+	s := BzrRevno(pth)
+	v.Path = pth
+	if s != v.String() {
+		t.Errorf("versions do not match for `bzr`. Expected [%s], got [%s]", s, v.String())
+	}
+
+	pth = "/home/vbatts/opt/go/src/cgl.tideland.biz"
+	s = HgTip(pth)
+	v.Path = pth
+	if s != v.String() {
+		t.Errorf("versions do not match for `hg`. Expected [%s], got [%s]", s, v.String())
+	}
 }
